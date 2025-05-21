@@ -13,12 +13,11 @@ class ChatbotApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Lash Studio Assistant',
+      title: 'Product Chatbot',
       theme: ThemeData(
-        primaryColor: Color(0xFFE91E63),
-        scaffoldBackgroundColor: Color(0xFF0D1421),
-        fontFamily: 'Roboto',
-        brightness: Brightness.dark,
+        primaryColor: Color(0xFF2C3E50),
+        scaffoldBackgroundColor: Color(0xFFF5F5F5),
+        fontFamily: 'Montserrat',
       ),
       home: ChatPage(),
       debugShowCheckedModeBanner: false,
@@ -31,53 +30,24 @@ class ChatPage extends StatefulWidget {
   _ChatPageState createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> with SingleTickerProviderStateMixin {
+class _ChatPageState extends State<ChatPage> {
   final TextEditingController _controller = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
   List<Map<String, String>> messages = [];
-  late AnimationController _animationController;
-  bool _isListening = false;
-  
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 1500),
-    )..repeat();
-    
-    // Add initial greeting
-    Future.delayed(Duration(milliseconds: 500), () {
-      setState(() {
-        messages.add({
-          'sender': 'bot', 
-          'text': 'Hello beautiful! 💕 Welcome to our lash studio. I can help you with lash extensions, pricing, booking appointments, and aftercare tips. What would you like to know?'
-        });
-      });
-    });
-  }
-  
-  @override
-  void dispose() {
-    _animationController.dispose();
-    _scrollController.dispose();
-    super.dispose();
-  }
+  final ScrollController _scrollController = ScrollController();
 
   void _sendMessage() async {
     final input = _controller.text.trim();
     if (input.isEmpty) return;
-    
     setState(() {
       messages.add({'sender': 'user', 'text': input});
     });
     _controller.clear();
     
-    // Scroll to bottom
+    // Scroll to bottom after user message
     _scrollToBottom();
     
-    // Add thinking delay
-    await Future.delayed(Duration(milliseconds: 600));
+    // Add a slight delay to simulate thinking
+    await Future.delayed(Duration(milliseconds: 300));
     
     // Show typing indicator
     setState(() {
@@ -86,12 +56,13 @@ class _ChatPageState extends State<ChatPage> with SingleTickerProviderStateMixin
     
     final response = await DBHelper.getAnswer(input);
     
-    // Remove typing and add response
+    // Remove typing indicator and add bot response
     setState(() {
       messages.removeWhere((element) => element['sender'] == 'typing');
       messages.add({'sender': 'bot', 'text': response!});
     });
     
+    // Scroll to bottom after bot response
     _scrollToBottom();
   }
   
@@ -107,411 +78,258 @@ class _ChatPageState extends State<ChatPage> with SingleTickerProviderStateMixin
     });
   }
 
-  void _toggleListening() {
-    setState(() {
-      _isListening = !_isListening;
-    });
-    
-    if (_isListening) {
-      // In a real app, this would activate speech recognition
-      Future.delayed(Duration(seconds: 2), () {
-        setState(() {
-          _isListening = false;
-          // Simulate received voice input
-          _controller.text = "How much do lash extensions cost?";
-        });
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF0D1421),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF0D1421),
-              Color(0xFF162447),
-              Color(0xFF1A1A2E),
-            ],
-          ),
+      appBar: AppBar(
+        elevation: 0,
+        title: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: Colors.white,
+              radius: 16,
+              child: Icon(
+                Icons.support_agent,
+                color: Color(0xFF2C3E50),
+                size: 20,
+              ),
+            ),
+            SizedBox(width: 12),
+            Text(
+              'TOYOTA ASSISTANT',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
         ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Custom Header
-              Container(
-                padding: EdgeInsets.all(20),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Color(0xFFE91E63), Color(0xFFAD1457)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Color(0xFFE91E63).withOpacity(0.3),
-                            blurRadius: 15,
-                            spreadRadius: 0,
-                            offset: Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.face_retouching_natural,
-                        color: Colors.white,
-                        size: 24,
-                      ),
+        backgroundColor: Color(0xFF2C3E50),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.more_vert),
+            onPressed: () {
+              // Show options menu
+            },
+          ),
+        ],
+      ),
+      backgroundColor: Color(0xFFF5F5F5),
+      body: Column(
+        children: [
+          // Welcome card at the top
+          if (messages.isEmpty)
+            Container(
+              margin: EdgeInsets.all(16),
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '👋 Welcome to Toyota Support',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Ask me anything about the Toyota Camry. Try asking about features, pricing, or specifications.',
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          
+          Expanded(
+            child: ListView.builder(
+              controller: _scrollController,
+              itemCount: messages.length,
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              itemBuilder: (_, index) {
+                final msg = messages[index];
+                final isUser = msg['sender'] == 'user';
+                final isTyping = msg['sender'] == 'typing';
+                
+                if (isTyping) {
+                  return Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      padding: EdgeInsets.all(12),
+                      margin: EdgeInsets.only(bottom: 12, right: 50),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            'Smart Assistant',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          Text(
-                            'Online • Ready to help',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF74B9FF),
-                            ),
-                          ),
+                          _buildTypingIndicator(),
                         ],
                       ),
                     ),
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: Color(0xFF2D3748).withOpacity(0.6),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.more_horiz,
-                        color: Colors.white70,
-                        size: 20,
-                      ),
+                  );
+                }
+                
+                return Align(
+                  alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  child: Container(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.75,
                     ),
-                  ],
-                ),
-              ),
-              
-              // Messages Container
-              Expanded(
-                child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: Color(0xFF1A1A2E).withOpacity(0.4),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
+                    padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    margin: EdgeInsets.only(
+                      bottom: 12,
+                      left: isUser ? 50 : 0,
+                      right: isUser ? 0 : 50,
                     ),
-                    border: Border.all(
-                      color: Color(0xFF2D3748).withOpacity(0.3),
-                      width: 1,
+                    decoration: BoxDecoration(
+                      color: isUser ? Color(0xFF2C3E50) : Colors.white,
+                      borderRadius: BorderRadius.circular(18).copyWith(
+                        bottomRight: isUser ? Radius.circular(5) : Radius.circular(18),
+                        bottomLeft: isUser ? Radius.circular(18) : Radius.circular(5),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 5,
+                          spreadRadius: 1,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      msg['text'] ?? '',
+                      style: TextStyle(
+                        color: isUser ? Colors.white : Colors.black87,
+                        fontSize: 15,
+                      ),
                     ),
                   ),
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    itemCount: messages.length,
-                    padding: EdgeInsets.all(20),
-                    itemBuilder: (_, index) {
-                      final msg = messages[index];
-                      final isUser = msg['sender'] == 'user';
-                      final isTyping = msg['sender'] == 'typing';
-                      
-                      if (isTyping) {
-                        return Align(
-                          alignment: Alignment.centerLeft,
-                          child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                            margin: EdgeInsets.only(bottom: 16, right: 80),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Color(0xFF2D3748).withOpacity(0.8),
-                                  Color(0xFF4A5568).withOpacity(0.6),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(20),
-                                topRight: Radius.circular(20),
-                                bottomRight: Radius.circular(20),
-                                bottomLeft: Radius.circular(4),
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 10,
-                                  offset: Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: _buildPulseAnimation(),
-                          ),
-                        );
-                      }
-                      
-                      return Padding(
-                        padding: EdgeInsets.only(bottom: 16),
-                        child: Row(
-                          mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            if (!isUser) ...[
-                              CircleAvatar(
-                                radius: 16,
-                                backgroundColor: Color(0xFF6C5CE7),
-                                child: Icon(
-                                  Icons.psychology_alt,
-                                  size: 16,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              SizedBox(width: 8),
-                            ],
-                            Flexible(
-                              child: Container(
-                                constraints: BoxConstraints(
-                                  maxWidth: MediaQuery.of(context).size.width * 0.7,
-                                ),
-                                padding: EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                                decoration: BoxDecoration(
-                                  gradient: isUser 
-                                    ? LinearGradient(
-                                        colors: [Color(0xFF6C5CE7), Color(0xFFA29BFE)],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      )
-                                    : LinearGradient(
-                                        colors: [
-                                          Color(0xFF2D3748).withOpacity(0.8),
-                                          Color(0xFF4A5568).withOpacity(0.6),
-                                        ],
-                                      ),
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(20),
-                                    topRight: Radius.circular(20),
-                                    bottomLeft: isUser ? Radius.circular(20) : Radius.circular(4),
-                                    bottomRight: isUser ? Radius.circular(4) : Radius.circular(20),
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: isUser 
-                                        ? Color(0xFF6C5CE7).withOpacity(0.3)
-                                        : Colors.black.withOpacity(0.1),
-                                      blurRadius: 10,
-                                      offset: Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: Text(
-                                  msg['text'] ?? '',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            if (isUser) ...[
-                              SizedBox(width: 8),
-                              CircleAvatar(
-                                radius: 16,
-                                backgroundColor: Color(0xFF74B9FF),
-                                child: Icon(
-                                  Icons.person,
-                                  size: 16,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-              
-              // Input Section
-              Container(
-                padding: EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Color(0xFF1A1A2E).withOpacity(0.6),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
-                  border: Border(
-                    top: BorderSide(
-                      color: Color(0xFF2D3748).withOpacity(0.3),
-                      width: 1,
-                    ),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    // Voice Button
-                    GestureDetector(
-                      onTap: _toggleListening,
-                      child: Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          gradient: _isListening 
-                            ? LinearGradient(
-                                colors: [Color(0xFFFF6B6B), Color(0xFFFF8E8E)],
-                              )
-                            : LinearGradient(
-                                colors: [
-                                  Color(0xFF2D3748).withOpacity(0.8),
-                                  Color(0xFF4A5568).withOpacity(0.6),
-                                ],
-                              ),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: _isListening 
-                                ? Color(0xFFFF6B6B).withOpacity(0.3)
-                                : Colors.black.withOpacity(0.1),
-                              blurRadius: 10,
-                              offset: Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          _isListening ? Icons.mic : Icons.mic_none_outlined,
-                          color: Colors.white,
-                          size: 22,
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    
-                    // Text Input
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Color(0xFF2D3748).withOpacity(0.4),
-                              Color(0xFF4A5568).withOpacity(0.2),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(25),
-                          border: Border.all(
-                            color: Color(0xFF6C5CE7).withOpacity(0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: TextField(
-                          controller: _controller,
-                          onSubmitted: (_) => _sendMessage(),
-                          style: TextStyle(color: Colors.white, fontSize: 16),
-                          decoration: InputDecoration(
-                            hintText: 'Type your message...',
-                            hintStyle: TextStyle(
-                              color: Colors.white.withOpacity(0.5),
-                              fontSize: 16,
-                            ),
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 16,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    
-                    // Send Button
-                    GestureDetector(
-                      onTap: _sendMessage,
-                      child: Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Color(0xFF6C5CE7), Color(0xFFA29BFE)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color(0xFF6C5CE7).withOpacity(0.4),
-                              blurRadius: 15,
-                              offset: Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          Icons.send_rounded,
-                          color: Colors.white,
-                          size: 22,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+                );
+              },
+            ),
           ),
-        ),
+          
+          // Input area
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  spreadRadius: 0,
+                  offset: Offset(0, -2),
+                ),
+              ],
+            ),
+            padding: EdgeInsets.fromLTRB(16, 12, 16, 24),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Color(0xFFF2F2F2),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Row(
+                      children: [
+                        SizedBox(width: 16),
+                        Expanded(
+                          child: TextField(
+                            controller: _controller,
+                            onSubmitted: (_) => _sendMessage(),
+                            decoration: InputDecoration(
+                              hintText: 'Ask about the Toyota Camry...',
+                              hintStyle: TextStyle(
+                                color: Colors.grey[500],
+                                fontSize: 15,
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.mic, color: Colors.grey[600]),
+                          onPressed: () {
+                            // Voice input functionality
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Color(0xFF2C3E50),
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.send_rounded, color: Colors.white, size: 22),
+                    onPressed: _sendMessage,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
   
-  Widget _buildPulseAnimation() {
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: List.generate(
-            3,
-            (index) {
-              final animationValue = Curves.easeInOut.transform(
-                (_animationController.value - (index * 0.2)).clamp(0.0, 1.0),
-              );
-              
-              return Container(
-                width: 8,
-                height: 8 + (8 * animationValue),
-                margin: EdgeInsets.symmetric(horizontal: 3),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF6C5CE7), Color(0xFFA29BFE)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-              );
-            },
+  Widget _buildTypingIndicator() {
+    return Row(
+      children: List.generate(
+        3,
+        (index) => Container(
+          width: 8,
+          height: 8,
+          margin: EdgeInsets.symmetric(horizontal: 2),
+          decoration: BoxDecoration(
+            color: Colors.grey[500],
+            shape: BoxShape.circle,
           ),
-        );
-      },
+          child: Center(
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0.5, end: 1.0),
+              duration: Duration(milliseconds: 600),
+              builder: (context, value, child) {
+                return Container(
+                  width: 8 * value,
+                  height: 8 * value,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[500],
+                    shape: BoxShape.circle,
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
