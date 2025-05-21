@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Flutter (FVM)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "debug",
+      "program": "lib/main.dart",
+      "toolArgs": [],
+      "cwd": "",
+      "env": {
+        "FLUTTER_SDK": "/.fvm/flutter_sdk"
+      }
+    }
+  ]
+}
